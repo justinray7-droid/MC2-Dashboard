@@ -25,6 +25,11 @@
   const countFor = (book) => Object.keys(ratingsFor(book)).length;
   const yourScore = (book) => (currentMember ? ratingsFor(book)[currentMember] : undefined);
 
+  // Convert internal 1–10 score to a 0–5 display string (half-star precision).
+  // 8 -> "4", 7 -> "3.5", 10 -> "5". Averages use star5avg for one decimal.
+  function star5(score) { const v = score / 2; return Number.isInteger(v) ? String(v) : v.toFixed(1); }
+  function star5avg(score) { return (score / 2).toFixed(1); }
+
   // ---------- star rendering ---------------------------------------------
   // starsFrac is on a 0–5 scale (score/2)
   function starsHTML(extraClass = "") {
@@ -70,7 +75,7 @@
       if (!currentMember) {
         caption.innerHTML = "Pick your name above to rate";
       } else if (ys != null) {
-        caption.innerHTML = "Your rating · <b>" + ys + "/10</b><span class=\"clear\">clear</span>";
+        caption.innerHTML = "Your rating · <b>" + star5(ys) + "/5</b><span class=\"clear\">clear</span>";
         const cl = $(".clear", caption);
         if (cl) cl.onclick = (e) => { e.stopPropagation(); Store.setRating(book, currentMember, null); };
       } else {
@@ -150,7 +155,7 @@
       avgBlock.appendChild(renderStaticStars(avg / 2, "lg"));
       const n = document.createElement("div");
       n.className = "avg-meta";
-      n.innerHTML = "<span class=\"avg-num\">" + avg.toFixed(1) + "<small>/10</small></span><br>" + cnt + (cnt === 1 ? " rating" : " ratings");
+      n.innerHTML = "<span class=\"avg-num\">" + star5avg(avg) + "<small>/5</small></span><br>" + cnt + (cnt === 1 ? " rating" : " ratings");
       avgBlock.appendChild(n);
     } else {
       avgBlock.innerHTML = '<div class="avg-meta">No ratings yet —<br>be the first.</div>';
@@ -163,7 +168,7 @@
     // stats
     const rated = currentMember ? MEETINGS.filter((m) => yourScore(m.book) != null).length : 0;
     const yourVals = currentMember ? MEETINGS.map((m) => yourScore(m.book)).filter((x) => x != null) : [];
-    const yourAvg = yourVals.length ? (yourVals.reduce((a, b) => a + b, 0) / yourVals.length).toFixed(1) : "—";
+    const yourAvg = yourVals.length ? star5avg(yourVals.reduce((a, b) => a + b, 0) / yourVals.length) : "—";
     const row = document.createElement("div");
     row.className = "stat-row";
     row.innerHTML =
@@ -272,7 +277,7 @@
     if (avg != null) {
       right.appendChild(renderStaticStars(avg / 2, "sm"));
       const sc = document.createElement("div"); sc.className = "score";
-      sc.innerHTML = avg.toFixed(1) + '<span style="font-size:11px;color:var(--ink-faint)">/10</span>';
+      sc.innerHTML = star5avg(avg) + '<span style="font-size:11px;color:var(--ink-faint)">/5</span>';
       right.appendChild(sc);
     } else {
       const sc = document.createElement("div"); sc.className = "score none"; sc.textContent = "unrated";
@@ -281,7 +286,7 @@
     if (currentMember) {
       const y = document.createElement("div");
       y.className = "yours" + (ys == null ? " unrated" : "");
-      y.textContent = ys != null ? "You: " + ys : "Rate this";
+      y.textContent = ys != null ? "You: " + star5(ys) : "Rate this";
       right.appendChild(y);
     }
     el.appendChild(right);
@@ -351,7 +356,7 @@
     av.className = "s-avg";
     if (avg != null) {
       const big = document.createElement("div");
-      big.className = "big"; big.innerHTML = avg.toFixed(1) + "<small>/10</small>";
+      big.className = "big"; big.innerHTML = star5avg(avg) + "<small>/5</small>";
       av.appendChild(big);
       const col = document.createElement("div");
       col.appendChild(renderStaticStars(avg / 2, ""));
@@ -379,7 +384,7 @@
         const isYou = e.nm === currentMember;
         row.innerHTML = '<span class="nm' + (isYou ? " you" : "") + '">' + esc(e.nm) + (isYou ? " (you)" : "") + "</span>";
         row.appendChild(renderStaticStars(e.sc / 2, "sm"));
-        const sc = document.createElement("span"); sc.className = "sc"; sc.textContent = e.sc + "/10";
+        const sc = document.createElement("span"); sc.className = "sc"; sc.textContent = star5(e.sc) + "/5";
         row.appendChild(sc);
         bd.appendChild(row);
       });
