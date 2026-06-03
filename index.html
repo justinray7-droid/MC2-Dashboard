@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
+  <title>Mount Comfort Men's Club</title>
+  <meta name="description" content="Mount Comfort Men's Club — book ratings dashboard" />
+  <meta name="theme-color" content="#211a16" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Men's Club" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Caslon+Display&family=Spectral:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <!-- header -->
+    <header class="topbar">
+      <div class="topbar-row">
+        <div class="crest">MC<sup>2</sup></div>
+        <div class="wordmark">
+          <div class="kicker">Est. 2023 · Fayetteville, AR</div>
+          <h1>Mount Comfort <em>Men's Club</em></h1>
+        </div>
+      </div>
+      <div class="ratingas">
+        <label for="memberSelect">Rating as</label>
+        <div class="select-wrap">
+          <select id="memberSelect"></select>
+        </div>
+        <span id="modeDot" class="mode-dot"><i></i></span>
+      </div>
+    </header>
+
+    <!-- views -->
+    <main>
+      <section class="view" id="view-home"></section>
+      <section class="view" id="view-library" hidden></section>
+      <section class="view" id="view-top" hidden></section>
+    </main>
+
+    <!-- bottom tabs -->
+    <nav class="tabbar">
+      <button data-view="home" class="active"><span class="ic">📖</span><span class="tx">This Month</span></button>
+      <button data-view="library"><span class="ic">📚</span><span class="tx">Library</span></button>
+      <button data-view="top"><span class="ic">🏆</span><span class="tx">Top Rated</span></button>
+    </nav>
+  </div>
+
+  <!-- book detail sheet -->
+  <div class="scrim" id="scrim"></div>
+  <div class="sheet" id="sheet"></div>
+
+  <!-- Supabase client (only used when config.js has credentials) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+  <script src="config.js"></script>
+  <script src="data.js"></script>
+  <script src="store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
