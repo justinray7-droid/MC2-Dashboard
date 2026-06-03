@@ -13,5 +13,5 @@
    operations the SQL policies permit (read all ratings, upsert a rating).
    ========================================================================== */
 
-window.SUPABASE_URL = "";       // e.g. "https://abcdefgh.supabase.co"
-window.SUPABASE_ANON_KEY = "";  // e.g. "eyJhbGciOiJIUzI1NiIsInR..."
+window.SUPABASE_URL = "https://vfdunuuxlkwtpwzcwuef.supabase.co";
+window.SUPABASE_ANON_KEY = "sb_publishable_8b6rXH_NM59vZUcFFP5hUQ_1kHE8NYQ";
