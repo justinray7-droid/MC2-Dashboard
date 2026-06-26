@@ -14,24 +14,32 @@
   let librarySearch = "";
   let openBook = null;
 
-  // ---------- rating math -------------------------------------------------
-  const ratingsFor = (book) => (Store.getAll()[book]) || {};
+  // ---------- book rating math --------------------------------------------
+  const ratingsFor     = (book)  => (Store.getAll()[book]) || {};
+  const drinkRatingsFor = (drink) => (Store.getAllDrinks()[drink]) || {};
+
   function avgFor(book) {
     const r = ratingsFor(book);
     const vals = Object.values(r);
     if (!vals.length) return null;
     return vals.reduce((a, b) => a + b, 0) / vals.length;
   }
-  const countFor = (book) => Object.keys(ratingsFor(book)).length;
-  const yourScore = (book) => (currentMember ? ratingsFor(book)[currentMember] : undefined);
+  function drinkAvgFor(drink) {
+    const r = drinkRatingsFor(drink);
+    const vals = Object.values(r);
+    if (!vals.length) return null;
+    return vals.reduce((a, b) => a + b, 0) / vals.length;
+  }
 
-  // Convert internal 1–10 score to a 0–5 display string (half-star precision).
-  // 8 -> "4", 7 -> "3.5", 10 -> "5". Averages use star5avg for one decimal.
-  function star5(score) { const v = score / 2; return Number.isInteger(v) ? String(v) : v.toFixed(1); }
+  const countFor      = (book)  => Object.keys(ratingsFor(book)).length;
+  const drinkCountFor = (drink) => Object.keys(drinkRatingsFor(drink)).length;
+  const yourScore     = (book)  => (currentMember ? ratingsFor(book)[currentMember]      : undefined);
+  const yourDrinkScore = (drink) => (currentMember ? drinkRatingsFor(drink)[currentMember] : undefined);
+
+  function star5(score)    { const v = score / 2; return Number.isInteger(v) ? String(v) : v.toFixed(1); }
   function star5avg(score) { return (score / 2).toFixed(1); }
 
   // ---------- star rendering ---------------------------------------------
-  // starsFrac is on a 0–5 scale (score/2)
   function starsHTML(extraClass = "") {
     let s = "";
     for (let i = 0; i < 5; i++) {
@@ -53,8 +61,8 @@
     return wrap.firstChild;
   }
 
-  // ---------- interactive rate track --------------------------------------
-  function buildRateTrack(book) {
+  // ---------- interactive rate track (generic) ----------------------------
+  function buildRateTrack(key, getScore, setScore) {
     const wrap = document.createElement("div");
     wrap.className = "rate";
     const track = document.createElement("div");
@@ -71,13 +79,13 @@
 
     function paint(score) { setFills(track, (score || 0) / 2); }
     function refreshCaption() {
-      const ys = yourScore(book);
+      const ys = getScore();
       if (!currentMember) {
         caption.innerHTML = "Pick your name above to rate";
       } else if (ys != null) {
         caption.innerHTML = "Your rating · <b>" + star5(ys) + "/5</b><span class=\"clear\">clear</span>";
         const cl = $(".clear", caption);
-        if (cl) cl.onclick = (e) => { e.stopPropagation(); Store.setRating(book, currentMember, null); };
+        if (cl) cl.onclick = (e) => { e.stopPropagation(); setScore(null); };
       } else {
         caption.innerHTML = "Tap to rate";
       }
@@ -93,21 +101,36 @@
     function preview(e) { paint(scoreFromEvent(e)); }
     function commit(e) {
       if (!currentMember) { flashName(); return; }
-      Store.setRating(book, currentMember, scoreFromEvent(e));
+      setScore(scoreFromEvent(e));
     }
     track.addEventListener("pointerdown", (e) => {
       if (!currentMember) { flashName(); return; }
       dragging = true; track.setPointerCapture(e.pointerId); preview(e); e.preventDefault();
     });
     track.addEventListener("pointermove", (e) => { if (dragging) preview(e); });
-    track.addEventListener("pointerup", (e) => { if (dragging) { dragging = false; commit(e); } });
-    track.addEventListener("pointercancel", () => { dragging = false; paint(yourScore(book)); });
+    track.addEventListener("pointerup",   (e) => { if (dragging) { dragging = false; commit(e); } });
+    track.addEventListener("pointercancel", () => { dragging = false; paint(getScore()); });
 
-    // initial
-    paint(yourScore(book));
+    paint(getScore());
     refreshCaption();
-    wrap._refresh = () => { paint(yourScore(book)); refreshCaption(); };
+    wrap._refresh = () => { paint(getScore()); refreshCaption(); };
     return wrap;
+  }
+
+  function buildBookRateTrack(book) {
+    return buildRateTrack(
+      book,
+      () => yourScore(book),
+      (score) => Store.setRating(book, currentMember, score)
+    );
+  }
+
+  function buildDrinkRateTrack(drink) {
+    return buildRateTrack(
+      drink,
+      () => yourDrinkScore(drink),
+      (score) => Store.setDrinkRating(drink, currentMember, score)
+    );
   }
 
   function flashName() {
@@ -147,8 +170,11 @@
       '<h3>' + esc(latest.book) + "</h3>" +
       '<div class="meta-line">Led by <b>' + esc(latest.leader) + "</b></div>" +
       '<div class="drink-chip"><span class="gl">\u{1F943}</span><span>' + esc(latest.drink) + "</span></div>";
+
     const zone = document.createElement("div");
     zone.className = "rate-zone";
+
+    // book avg
     const avgBlock = document.createElement("div");
     avgBlock.className = "avg-block";
     if (avg != null) {
@@ -161,7 +187,32 @@
       avgBlock.innerHTML = '<div class="avg-meta">No ratings yet —<br>be the first.</div>';
     }
     zone.appendChild(avgBlock);
-    zone.appendChild(buildRateTrack(latest.book));
+    zone.appendChild(buildBookRateTrack(latest.book));
+
+    // drink rating section
+    const drinkSection = document.createElement("div");
+    drinkSection.className = "drink-rate-section";
+    const drinkAvg = drinkAvgFor(latest.drink), drinkCnt = drinkCountFor(latest.drink);
+    const drinkLabel = document.createElement("div");
+    drinkLabel.className = "drink-rate-label";
+    drinkLabel.innerHTML = '<span class="gl">🍺</span> Rate the Drink: <b>' + esc(latest.drink) + "</b>";
+    drinkSection.appendChild(drinkLabel);
+
+    const drinkAvgBlock = document.createElement("div");
+    drinkAvgBlock.className = "avg-block";
+    if (drinkAvg != null) {
+      drinkAvgBlock.appendChild(renderStaticStars(drinkAvg / 2, ""));
+      const dn = document.createElement("div");
+      dn.className = "avg-meta";
+      dn.innerHTML = "<span class=\"avg-num\" style=\"font-size:20px\">" + star5avg(drinkAvg) + "<small>/5</small></span><br>" + drinkCnt + (drinkCnt === 1 ? " rating" : " ratings");
+      drinkAvgBlock.appendChild(dn);
+    } else {
+      drinkAvgBlock.innerHTML = '<div class="avg-meta">No drink ratings yet.</div>';
+    }
+    drinkSection.appendChild(drinkAvgBlock);
+    drinkSection.appendChild(buildDrinkRateTrack(latest.drink));
+    zone.appendChild(drinkSection);
+
     f.appendChild(zone);
     v.appendChild(f);
 
@@ -177,7 +228,7 @@
       '<div class="stat"><div class="n">' + yourAvg + '</div><div class="l">Your avg</div></div>';
     v.appendChild(row);
 
-    // nudge: unrated by you
+    // nudge
     if (currentMember) {
       const unrated = MEETINGS.filter((m) => yourScore(m.book) == null);
       if (unrated.length) {
@@ -185,7 +236,7 @@
         nb.className = "nudge";
         nb.innerHTML = '<div class="t"><b>' + unrated.length + "</b> book" + (unrated.length === 1 ? "" : "s") +
           " you haven\u2019t rated yet.</div><button class=\"go\">Rate now</button>";
-        $(".go", nb).onclick = () => openSheet(unrated[unrated.length - 1].book); // oldest unrated
+        $(".go", nb).onclick = () => openSheet(unrated[unrated.length - 1].book);
         v.appendChild(nb);
       }
     } else {
@@ -247,7 +298,6 @@
     } else if (librarySort === "unrated") {
       items.sort((a, b) => (yourScore(a.book) != null ? 1 : 0) - (yourScore(b.book) != null ? 1 : 0));
     }
-    // newest = original order (MEETINGS is newest-first)
 
     list.innerHTML = "";
     if (!items.length) { list.innerHTML = '<div class="empty-state">No books match \u201C' + esc(librarySearch) + "\u201D.</div>"; return; }
@@ -294,7 +344,49 @@
     return el;
   }
 
-  // ---------- TOP RATED ---------------------------------------------------
+  // ---------- drink card (for Top Drinks view) ----------------------------
+  function drinkCard(m, rank) {
+    const el = document.createElement("div");
+    el.className = "book-card";
+    const avg = drinkAvgFor(m.drink), cnt = drinkCountFor(m.drink), ys = yourDrinkScore(m.drink);
+
+    if (rank != null) {
+      const r = document.createElement("div");
+      r.className = "rank" + (rank <= 3 ? " top" : "");
+      r.textContent = rank;
+      el.appendChild(r);
+    }
+
+    const body = document.createElement("div");
+    body.className = "body";
+    body.innerHTML =
+      '<p class="title">🍺 ' + esc(m.drink) + "</p>" +
+      '<div class="sub">' + esc(m.date) + '<span class="dot">•</span>' + esc(m.book) + "</div>";
+    el.appendChild(body);
+
+    const right = document.createElement("div");
+    right.className = "right";
+    if (avg != null) {
+      right.appendChild(renderStaticStars(avg / 2, "sm"));
+      const sc = document.createElement("div"); sc.className = "score";
+      sc.innerHTML = star5avg(avg) + '<span style="font-size:11px;color:var(--ink-faint)">/5</span>';
+      right.appendChild(sc);
+    } else {
+      const sc = document.createElement("div"); sc.className = "score none"; sc.textContent = "unrated";
+      right.appendChild(sc);
+    }
+    if (currentMember) {
+      const y = document.createElement("div");
+      y.className = "yours" + (ys == null ? " unrated" : "");
+      y.textContent = ys != null ? "You: " + star5(ys) : "Rate this";
+      right.appendChild(y);
+    }
+    el.appendChild(right);
+    el.onclick = () => openSheet(m.book);
+    return el;
+  }
+
+  // ---------- TOP RATED (books) -------------------------------------------
   function renderTop() {
     const v = $("#view-top"); v.innerHTML = "";
     const head = document.createElement("div");
@@ -312,6 +404,44 @@
     } else {
       ranked.forEach((m, i) => list.appendChild(bookCard(m, i + 1)));
     }
+    v.appendChild(list);
+  }
+
+  // ---------- TOP DRINKS --------------------------------------------------
+  function renderTopDrinks() {
+    const v = $("#view-drinks"); v.innerHTML = "";
+    const head = document.createElement("div");
+    head.className = "section-head";
+    head.innerHTML = '<h2>Top Drinks</h2><span class="count">best pours</span>';
+    v.appendChild(head);
+
+    // All drinks, ranked by avg drink rating
+    const ranked = MEETINGS.filter((m) => drinkAvgFor(m.drink) != null)
+      .sort((a, b) => drinkAvgFor(b.drink) - drinkAvgFor(a.drink));
+
+    // Unrated drinks section
+    const unrated = MEETINGS.filter((m) => drinkAvgFor(m.drink) == null);
+
+    const list = document.createElement("div");
+    list.className = "book-list";
+
+    if (!ranked.length && !unrated.length) {
+      list.innerHTML = '<div class="empty-state">No drink ratings yet. Open a book and rate the pour.</div>';
+    } else {
+      ranked.forEach((m, i) => list.appendChild(drinkCard(m, i + 1)));
+
+      if (unrated.length && ranked.length) {
+        const divider = document.createElement("div");
+        divider.className = "list-divider";
+        divider.textContent = "Not yet rated";
+        list.appendChild(divider);
+      }
+      if (!ranked.length) {
+        list.innerHTML = '<div class="empty-state">No drink ratings yet. Open a book and rate the pour.</div>';
+      }
+      unrated.forEach((m) => list.appendChild(drinkCard(m, null)));
+    }
+
     v.appendChild(list);
   }
 
@@ -335,7 +465,9 @@
     if (!m) return;
     const sheet = $("#sheet");
     const avg = avgFor(m.book), cnt = countFor(m.book);
+    const drinkAvg = drinkAvgFor(m.drink), drinkCnt = drinkCountFor(m.drink);
     const r = ratingsFor(m.book);
+    const dr = drinkRatingsFor(m.drink);
 
     sheet.innerHTML =
       '<div class="grab"></div>' +
@@ -344,14 +476,14 @@
       '<div class="s-meta">Led by <b>' + esc(m.leader) + "</b></div>" +
       '<div class="drink-chip"><span class="gl">\u{1F943}</span><span>' + esc(m.drink) + "</span></div>";
 
-    // rate card
+    // ---- Book rate card
     const rc = document.createElement("div");
     rc.className = "s-rate-card";
-    rc.innerHTML = '<div class="ask">Your Rating</div>';
-    rc.appendChild(buildRateTrack(m.book));
+    rc.innerHTML = '<div class="ask">Your Book Rating</div>';
+    rc.appendChild(buildBookRateTrack(m.book));
     sheet.appendChild(rc);
 
-    // avg block
+    // book avg
     const av = document.createElement("div");
     av.className = "s-avg";
     if (avg != null) {
@@ -369,10 +501,10 @@
     }
     sheet.appendChild(av);
 
-    // breakdown
+    // book breakdown
     const bd = document.createElement("div");
     bd.className = "breakdown";
-    bd.innerHTML = '<div class="bk-head">Member Ratings</div>';
+    bd.innerHTML = '<div class="bk-head">Member Book Ratings</div>';
     const entries = MEMBERS.filter((nm) => r[nm] != null).map((nm) => ({ nm, sc: r[nm] }))
       .sort((a, b) => b.sc - a.sc);
     if (!entries.length) {
@@ -390,6 +522,58 @@
       });
     }
     sheet.appendChild(bd);
+
+    // ---- Drink divider
+    const divider = document.createElement("div");
+    divider.className = "s-divider";
+    sheet.appendChild(divider);
+
+    // ---- Drink rate card
+    const drc = document.createElement("div");
+    drc.className = "s-rate-card";
+    drc.innerHTML = '<div class="ask">🍺 Rate the Drink: ' + esc(m.drink) + '</div>';
+    drc.appendChild(buildDrinkRateTrack(m.drink));
+    sheet.appendChild(drc);
+
+    // drink avg
+    const dav = document.createElement("div");
+    dav.className = "s-avg";
+    if (drinkAvg != null) {
+      const big = document.createElement("div");
+      big.className = "big"; big.innerHTML = star5avg(drinkAvg) + "<small>/5</small>";
+      dav.appendChild(big);
+      const col = document.createElement("div");
+      col.appendChild(renderStaticStars(drinkAvg / 2, ""));
+      const meta = document.createElement("div"); meta.className = "meta";
+      meta.textContent = "Club avg · " + drinkCnt + (drinkCnt === 1 ? " rating" : " ratings");
+      col.appendChild(meta);
+      dav.appendChild(col);
+    } else {
+      dav.innerHTML = '<div class="meta" style="text-align:center">No drink ratings yet.</div>';
+    }
+    sheet.appendChild(dav);
+
+    // drink breakdown
+    const dbd = document.createElement("div");
+    dbd.className = "breakdown";
+    dbd.innerHTML = '<div class="bk-head">Member Drink Ratings</div>';
+    const drinkEntries = MEMBERS.filter((nm) => dr[nm] != null).map((nm) => ({ nm, sc: dr[nm] }))
+      .sort((a, b) => b.sc - a.sc);
+    if (!drinkEntries.length) {
+      dbd.innerHTML += '<div class="bk-empty">Nobody has rated this drink yet.</div>';
+    } else {
+      drinkEntries.forEach((e) => {
+        const row = document.createElement("div");
+        row.className = "bk-row";
+        const isYou = e.nm === currentMember;
+        row.innerHTML = '<span class="nm' + (isYou ? " you" : "") + '">' + esc(e.nm) + (isYou ? " (you)" : "") + "</span>";
+        row.appendChild(renderStaticStars(e.sc / 2, "sm"));
+        const sc = document.createElement("span"); sc.className = "sc"; sc.textContent = star5(e.sc) + "/5";
+        row.appendChild(sc);
+        dbd.appendChild(row);
+      });
+    }
+    sheet.appendChild(dbd);
   }
 
   // ---------- view switching ----------------------------------------------
@@ -405,9 +589,10 @@
   // ---------- master render ----------------------------------------------
   function render() {
     renderHeader();
-    if (currentView === "home") renderHome();
+    if (currentView === "home")    renderHome();
     else if (currentView === "library") renderLibrary();
-    else if (currentView === "top") renderTop();
+    else if (currentView === "top")     renderTop();
+    else if (currentView === "drinks")  renderTopDrinks();
     if (openBook) renderSheet();
   }
 
