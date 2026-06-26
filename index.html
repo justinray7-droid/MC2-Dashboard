@@ -1,4 +1,3 @@
-<!-- rebuild 1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -189,6 +188,7 @@ body { background: radial-gradient(120% 80% at 50% -10%, #fff7ea 0%, var(--paper
 /* ---- CONFIG ---- */
 window.SUPABASE_URL      = "https://vfxushzugnbnqtcpgcfj.supabase.co";
 window.SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZmeHVzaHp1Z25ibnF0Y3BnY2ZqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI0ODAzNTksImV4cCI6MjA5ODA1NjM1OX0.jRVrl4A1lYOkpInNxLNU2IrXOhlBas3X1u0-aguLfC4";
+
 /* ---- DATA ---- */
 var MEMBERS = [
   "Mike Kaminski","William Biehn","Justin Ray","Derek Wardlow",
@@ -296,31 +296,43 @@ var MEETINGS = [
       catch(e){console.error("Supabase drink write failed",e);}
     };
     store.ready=(async function(){
-      var res=await Promise.all([
-        sb.from("ratings").select("book,member,score"),
-        sb.from("drink_ratings").select("drink,member,score").catch(function(){return {data:[]};})
-      ]);
-      (res[0].data||[]).forEach(applyBook);
-      (res[1].data||[]).forEach(applyDrink);
-      sb.channel("mc2-stream")
-        .on("postgres_changes",{event:"*",schema:"public",table:"ratings"},function(p){
-          if(p.eventType==="DELETE"){var o=p.old||{};removeBook(o.book,o.member);}
-          else applyBook(p.new);
-          store._emit();
-        })
-        .on("postgres_changes",{event:"*",schema:"public",table:"drink_ratings"},function(p){
-          if(p.eventType==="DELETE"){var o=p.old||{};removeDrink(o.drink,o.member);}
-          else applyDrink(p.new);
-          store._emit();
-        })
-        .subscribe();
+      // Load initial data — never let a failure blank the page.
+      try{
+        var res=await Promise.all([
+          sb.from("ratings").select("book,member,score").then(function(r){return r;},function(){return {data:[]};}),
+          sb.from("drink_ratings").select("drink,member,score").then(function(r){return r;},function(){return {data:[]};})
+        ]);
+        (res[0].data||[]).forEach(applyBook);
+        (res[1].data||[]).forEach(applyDrink);
+      }catch(e){console.error("Supabase initial load failed",e);}
+      // Realtime is optional — wrap so a failure can't crash boot.
+      try{
+        sb.channel("mc2-stream")
+          .on("postgres_changes",{event:"*",schema:"public",table:"ratings"},function(p){
+            if(p.eventType==="DELETE"){var o=p.old||{};removeBook(o.book,o.member);}
+            else applyBook(p.new);
+            store._emit();
+          })
+          .on("postgres_changes",{event:"*",schema:"public",table:"drink_ratings"},function(p){
+            if(p.eventType==="DELETE"){var o=p.old||{};removeDrink(o.drink,o.member);}
+            else applyDrink(p.new);
+            store._emit();
+          })
+          .subscribe();
+      }catch(e){console.error("Supabase realtime subscribe failed",e);}
+      store._emit();
     })();
     return store;
   }
   var url=(window.SUPABASE_URL||"").trim();
   var key=(window.SUPABASE_ANON_KEY||"").trim();
-  var haveCreds=url&&key&&window.supabase&&/^https?:\/\//.test(url);
-  window.Store=haveCreds?SupabaseStore(url,key):LocalStore();
+  var haveCreds=url&&key&&window.supabase&&typeof window.supabase.createClient==="function"&&/^https?:\/\//.test(url);
+  if(haveCreds){
+    try{ window.Store=SupabaseStore(url,key); }
+    catch(e){ console.error("Supabase init failed, falling back to local mode",e); window.Store=LocalStore(); }
+  } else {
+    window.Store=LocalStore();
+  }
 })();
 
 /* ---- APP ---- */
@@ -595,7 +607,7 @@ var MEETINGS = [
     Store.onChange(render);
     setView(currentView);
   }
-  Store.ready.then(boot);
+  Store.ready.then(boot,function(e){console.error("Store.ready rejected; booting anyway",e);boot();});
 })();
   </script>
 </body>
