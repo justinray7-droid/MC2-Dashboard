@@ -2,7 +2,7 @@
    Mount Comfort Men's Club — styles
    Warm, clubby, leather-and-whiskey. Mobile-first (iPhone), scales up.
    ========================================================================== */
- 
+
 :root {
   /* Warm paper + ink */
   --paper:        #f3ece0;
@@ -11,21 +11,21 @@
   --ink:          #2a2320;
   --ink-soft:     #715f4f;
   --ink-faint:    #9b8a78;
- 
+
   /* Dark "leather" chrome */
   --leather:      #211a16;
   --leather-2:    #2c231d;
   --leather-line: rgba(255, 244, 226, 0.12);
   --cream:        #f3ead9;
   --cream-soft:   #c9bba6;
- 
+
   /* Accents */
   --wine:         #863331;
   --wine-deep:    #6a2422;
   --brass:        #c0883d;
   --brass-bright: #d8a24e;
   --brass-soft:   #e6cfa3;
- 
+
   /* Hairlines + structure */
   --line:         rgba(42, 35, 32, 0.12);
   --line-strong:  rgba(42, 35, 32, 0.20);
@@ -33,16 +33,16 @@
   --shadow-lg:    0 24px 60px -24px rgba(42, 27, 18, 0.45);
   --radius:       14px;
   --radius-lg:    20px;
- 
+
   --serif-display: "Libre Caslon Display", Georgia, serif;
   --serif:         "Spectral", Georgia, serif;
- 
+
   --maxw: 540px;
   --tab-h: 64px;
 }
- 
+
 * { box-sizing: border-box; }
- 
+
 html, body {
   margin: 0;
   padding: 0;
@@ -52,12 +52,12 @@ html, body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
- 
+
 body {
   background:
     radial-gradient(120% 80% at 50% -10%, #fff7ea 0%, var(--paper) 42%, var(--paper-2) 100%);
 }
- 
+
 .app {
   max-width: var(--maxw);
   margin: 0 auto;
@@ -69,7 +69,7 @@ body {
   position: relative;
   padding-bottom: calc(var(--tab-h) + env(safe-area-inset-bottom, 0px) + 12px);
 }
- 
+
 /* ---------------------------------------------------------------- header */
 .topbar {
   position: sticky;
@@ -82,7 +82,7 @@ body {
   box-shadow: 0 6px 20px -10px rgba(0,0,0,0.6);
 }
 .topbar-row { display: flex; align-items: center; gap: 12px; }
- 
+
 .crest {
   width: 42px; height: 42px; flex: none;
   border-radius: 50%;
@@ -96,7 +96,7 @@ body {
   background: radial-gradient(circle at 50% 30%, #34281f, #1c1511);
 }
 .crest sup { font-size: 0.62em; vertical-align: top; margin-left: 0.5px; position: relative; top: -0.12em; }
- 
+
 .wordmark { flex: 1; min-width: 0; line-height: 1.05; }
 .wordmark .kicker {
   font-size: 9.5px; letter-spacing: 2.4px; text-transform: uppercase;
@@ -111,7 +111,7 @@ body {
   color: var(--cream);
 }
 .wordmark h1 em { color: var(--brass-bright); font-style: italic; }
- 
+
 /* "Rating as" selector */
 .ratingas { display: flex; align-items: center; gap: 8px; margin-top: 12px; }
 .ratingas label {
@@ -144,11 +144,11 @@ body {
   box-shadow: 0 0 0 3px rgba(255,255,255,0.04);
 }
 .mode-dot.live i { background: #5fae6a; box-shadow: 0 0 8px #5fae6a; }
- 
+
 /* ----------------------------------------------------------------- views */
 .view { padding: 18px 16px 8px; }
 .view[hidden] { display: none; }
- 
+
 .section-head {
   display: flex; align-items: baseline; justify-content: space-between;
   margin: 4px 2px 12px;
@@ -158,12 +158,12 @@ body {
   font-size: 22px; margin: 0; color: var(--ink); white-space: nowrap;
 }
 .section-head .count { font-size: 12.5px; color: var(--ink-faint); letter-spacing: 0.3px; flex: none; }
- 
+
 .label-eyebrow {
   font-size: 10.5px; letter-spacing: 2.2px; text-transform: uppercase;
   color: var(--wine); font-weight: 600;
 }
- 
+
 /* --------------------------------------------------------- feature card */
 .feature {
   position: relative;
@@ -191,7 +191,7 @@ body {
 }
 .feature .meta-line { font-size: 13.5px; color: var(--ink-soft); margin-top: 6px; }
 .feature .meta-line b { color: var(--ink); font-weight: 600; }
- 
+
 .drink-chip {
   display: inline-flex; align-items: center; gap: 7px;
   margin-top: 12px;
@@ -203,14 +203,14 @@ body {
 }
 .drink-chip .gl { font-size: 13px; }
 .drink-chip span { font-style: italic; }
- 
+
 .feature .rate-zone {
   margin-top: 16px; padding-top: 15px; border-top: 1px solid var(--line);
   display: flex; flex-direction: column; gap: 14px;
 }
 .feature .rate-zone .rate { align-items: flex-start; }
 .feature .rate-zone .rate .track { font-size: 34px; gap: 6px; }
- 
+
 /* drink rating section inside feature card */
 .drink-rate-section {
   border-top: 1px solid var(--line);
@@ -225,7 +225,7 @@ body {
   font-style: italic;
 }
 .drink-rate-label b { color: var(--ink); font-style: normal; font-weight: 600; }
- 
+
 /* --------------------------------------------------------------- ratings */
 .avg-block { display: flex; align-items: center; gap: 10px; }
 .avg-num {
@@ -233,7 +233,7 @@ body {
 }
 .avg-num small { font-size: 14px; color: var(--ink-faint); }
 .avg-meta { font-size: 11.5px; color: var(--ink-faint); letter-spacing: 0.2px; line-height: 1.3; }
- 
+
 /* star display */
 .stars { display: inline-flex; gap: 2px; font-size: 18px; line-height: 1; }
 .stars .star { position: relative; width: 1em; height: 1em; color: var(--line-strong); }
@@ -244,7 +244,7 @@ body {
 .stars .star .empty, .stars .star .fill { display: block; }
 .stars.lg { font-size: 30px; gap: 4px; }
 .stars.sm { font-size: 14px; gap: 1px; }
- 
+
 /* interactive rating */
 .rate {
   display: inline-flex; flex-direction: column; align-items: flex-end; gap: 5px;
@@ -261,7 +261,7 @@ body {
 .rate .caption { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.3px; }
 .rate .caption b { color: var(--wine); font-weight: 600; }
 .rate .caption .clear { color: var(--ink-faint); text-decoration: underline; cursor: pointer; margin-left: 8px; }
- 
+
 /* ----------------------------------------------------------- list cards */
 .book-list { display: flex; flex-direction: column; gap: 10px; }
 .book-card {
@@ -294,7 +294,7 @@ body {
   color: var(--brass); font-weight: 600;
 }
 .book-card .right .yours.unrated { color: var(--wine); }
- 
+
 /* rank medallion */
 .rank {
   flex: none; width: 30px; height: 30px; border-radius: 50%;
@@ -303,13 +303,13 @@ body {
   border: 1px solid var(--line-strong);
 }
 .rank.top { background: linear-gradient(160deg, var(--brass-bright), var(--brass)); color: #2a1c0a; border: none; box-shadow: 0 3px 8px -3px rgba(192,136,61,0.7); }
- 
+
 /* list section divider */
 .list-divider {
   font-size: 10px; letter-spacing: 1.8px; text-transform: uppercase;
   color: var(--ink-faint); padding: 10px 4px 2px;
 }
- 
+
 /* -------------------------------------------------------- stat row (home) */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0 6px; }
 .stat {
@@ -318,7 +318,7 @@ body {
 }
 .stat .n { font-family: var(--serif-display); font-size: 26px; color: var(--ink); line-height: 1; }
 .stat .l { font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-faint); margin-top: 6px; }
- 
+
 /* nudge banner */
 .nudge {
   margin-top: 16px;
@@ -336,7 +336,7 @@ body {
   font-family: var(--serif); font-weight: 600; font-size: 13px;
   padding: 9px 14px; border-radius: 9px; cursor: pointer;
 }
- 
+
 /* ---------------------------------------------------------- search/sort */
 .toolbar { display: flex; gap: 8px; margin-bottom: 14px; }
 .search {
@@ -361,9 +361,9 @@ body {
   background-repeat: no-repeat; background-position: right 12px center;
 }
 .sort:focus { outline: none; border-color: var(--brass); }
- 
+
 .empty-state { text-align: center; color: var(--ink-faint); padding: 40px 20px; font-style: italic; }
- 
+
 /* ------------------------------------------------------------ bottom tabs */
 .tabbar {
   position: fixed; left: 50%; transform: translateX(-50%);
@@ -384,7 +384,7 @@ body {
 .tabbar button .tx { font-size: 9.5px; letter-spacing: 0.4px; }
 .tabbar button.active { color: var(--brass-bright); }
 .tabbar button.active .ic { opacity: 1; }
- 
+
 /* ----------------------------------------------------------------- sheet */
 .scrim {
   position: fixed; inset: 0; z-index: 50;
@@ -393,7 +393,7 @@ body {
   opacity: 0; pointer-events: none; transition: opacity .22s ease;
 }
 .scrim.open { opacity: 1; pointer-events: auto; }
- 
+
 .sheet {
   position: fixed; left: 50%; bottom: 0; transform: translate(-50%, 100%);
   width: 100%; max-width: var(--maxw); z-index: 51;
@@ -414,13 +414,13 @@ body {
 }
 .sheet .s-meta { font-size: 13.5px; color: var(--ink-soft); }
 .sheet .s-meta b { color: var(--ink); font-weight: 600; }
- 
+
 /* sheet divider between book and drink sections */
 .s-divider {
   border: none; border-top: 2px dashed var(--line-strong);
   margin: 22px 0 18px;
 }
- 
+
 .s-rate-card {
   margin: 18px 0; padding: 16px; border-radius: var(--radius);
   background: linear-gradient(160deg, #fffaf0, #f6efe3);
@@ -432,12 +432,12 @@ body {
 .s-rate-card .rate .track { font-size: 38px; gap: 6px; }
 .s-rate-card .who { font-size: 12px; color: var(--ink-faint); margin-top: 4px; }
 .s-rate-card .who b { color: var(--wine); font-weight: 600; }
- 
+
 .s-avg { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 4px 0 18px; }
 .s-avg .big { font-family: var(--serif-display); font-size: 34px; color: var(--ink); line-height: 1; }
 .s-avg .big small { font-size: 16px; color: var(--ink-faint); }
 .s-avg .meta { font-size: 12px; color: var(--ink-faint); text-align: left; line-height: 1.35; }
- 
+
 .breakdown { border-top: 1px solid var(--line); padding-top: 14px; }
 .breakdown .bk-head { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: var(--ink-faint); margin-bottom: 10px; }
 .bk-row { display: flex; align-items: center; gap: 10px; padding: 6px 0; }
@@ -445,14 +445,13 @@ body {
 .bk-row .nm.you { color: var(--wine); font-weight: 600; }
 .bk-row .sc { font-family: var(--serif-display); font-size: 15px; color: var(--ink-soft); width: 42px; text-align: right; }
 .bk-empty { font-size: 13px; color: var(--ink-faint); font-style: italic; padding: 4px 0 6px; }
- 
+
 /* footer note */
 .footer { text-align: center; color: var(--ink-faint); font-size: 11px; padding: 22px 20px 6px; line-height: 1.5; }
 .footer .est { font-family: var(--serif-display); font-size: 13px; color: var(--ink-soft); }
- 
+
 @media (max-width: 360px) {
   .feature h3 { font-size: 26px; }
   .stat .n { font-size: 22px; }
   .tabbar button .tx { font-size: 8.5px; }
 }
- 
