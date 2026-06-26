@@ -25,6 +25,7 @@ window.MEMBERS = [
 ];
 
 window.MEETINGS = [
+  { date: "June 2026", book: "Butcher's Crossing", leader: "John Post", drink: "Bison Brews" },
   { date: "May 2026", book: "Sightseeing", leader: "William Biehn", drink: "A Taste of Thailand" },
   { date: "April 2026", book: "The Journey to the East", leader: "Alex Dowell", drink: "Brews from Bremgarten" },
   { date: "March 2026", book: "Project Hail Mary", leader: "Heath Rheay", drink: "Russian Vodka & Tube Lasagna" },
